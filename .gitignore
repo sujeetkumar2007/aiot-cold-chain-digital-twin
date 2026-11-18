@@ -28,3 +28,9 @@ Thumbs.db
 # Logs
 *.log
 esp32/secrets.h
+**/secrets.h
+
+# Local database files
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
