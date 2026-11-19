@@ -88,24 +88,55 @@ void updateDisplay(float temperature, float humidity,
 }
 
 // WIFI CONNECTION
+
 void connectWiFi() {
 
   WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);
+
+  Serial.println("\nScanning for WiFi networks...");
+
+  int networks = WiFi.scanNetworks();
+
+  for (int i = 0; i < networks; i++) {
+    Serial.print("Network: ");
+    Serial.print(WiFi.SSID(i));
+    Serial.print(" | Signal: ");
+    Serial.println(WiFi.RSSI(i));
+  }
+
+  Serial.println("\nConnecting to WiFi...");
+
   WiFi.begin(ssid, password);
 
-  Serial.print("Connecting to WiFi");
+  unsigned long startAttempt = millis();
 
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED &&
+         millis() - startAttempt < 20000) {
+
     delay(500);
     Serial.print(".");
   }
 
-  Serial.println("\nWiFi Connected!");
-  Serial.print("ESP32 IP: ");
-  Serial.println(WiFi.localIP());
+  if (WiFi.status() == WL_CONNECTED) {
 
-  udp.begin(DISCOVERY_PORT);
+    Serial.println("\nWiFi Connected!");
+
+    Serial.print("ESP32 IP: ");
+    Serial.println(WiFi.localIP());
+
+    udp.begin(DISCOVERY_PORT);
+
+  } else {
+
+    Serial.println("\nWiFi Connection Failed!");
+
+    Serial.print("WiFi status code: ");
+    Serial.println(WiFi.status());
+
+  }
 }
+
 
 // AUTOMATIC BACKEND DISCOVERY
 bool discoverServer() {

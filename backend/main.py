@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 import crud
+from ml.anomaly_detection import analyze_reading
 
 from database import engine, get_db, Base
 
@@ -109,3 +110,36 @@ def sensor_history(
         )
 
     return crud.get_sensor_readings(db, limit)
+
+
+@app.post("/api/ml/anomaly")
+def detect_anomaly(reading: schemas.SensorReadingCreate):
+    return analyze_reading(
+        temperature=reading.temperature,
+        humidity=reading.humidity,
+        gas_raw=reading.gas_raw,
+        door_open=reading.door_open
+    )
+
+
+@app.get("/api/ml/anomaly/latest")
+def detect_latest_anomaly(db: Session = Depends(get_db)):
+    reading = crud.get_latest_sensor_reading(db)
+
+    if reading is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No sensor readings available"
+        )
+
+    result = analyze_reading(
+        temperature=reading.temperature,
+        humidity=reading.humidity,
+        gas_raw=reading.gas_raw,
+        door_open=reading.door_open
+    )
+
+    result["reading_id"] = reading.id
+    result["timestamp"] = reading.timestamp
+
+    return result

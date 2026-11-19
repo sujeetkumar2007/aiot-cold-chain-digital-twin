@@ -4,6 +4,7 @@ __pycache__/
 venv/
 .venv/
 env/
+*.pyc
 
 # Environment variables and secrets
 .env
@@ -34,3 +35,4 @@ esp32/secrets.h
 backend/*.db
 backend/*.db-shm
 backend/*.db-wal
+
